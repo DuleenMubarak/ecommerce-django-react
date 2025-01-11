@@ -53,18 +53,13 @@ jobs:
             venv-${{ runner.os }}-
           
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
             
       - name: Install npm and run build
         run: |
           cd ./frontend
-          export NODE_OPTIONS=--openssl-legacy-provider
           npm install
           npm run build
+          rm -rf node_modules
 
 
 
