@@ -37,10 +37,10 @@ jobs:
           name: code
           path: .
 
-      - name: Set up python 3.12.3
-        uses: actions/setup-python@v5
+      - name: Set up python 3.12
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.12.3'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install dependencies
@@ -82,10 +82,10 @@ jobs:
           name: code
           path: .
 
-      - name: Set up python 3.12.3
+      - name: Set up python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12.3'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Cache virtual environment
