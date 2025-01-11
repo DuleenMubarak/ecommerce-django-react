@@ -55,6 +55,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m venv .venv
+          export NODE_OPTIONS=--openssl-legacy-provider
           source .venv/bin/activate
           pip install -r requirements.txt
 
