@@ -52,12 +52,20 @@ jobs:
           restore-keys: |
             venv-${{ runner.os }}-
           
-      - name: Install dependencies
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+            
+      - name: Install npm and run build
         run: |
-          python -m venv .venv
+          cd ./frontend
           export NODE_OPTIONS=--openssl-legacy-provider
-          source .venv/bin/activate
-          pip install -r requirements.txt
+          npm install
+          npm run build
+
 
 
       - name: install npm and run build 
