@@ -44,15 +44,7 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Cache virtual environment
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            venv-${{ runner.os }}-
-          
-
+              
             
       - name: Install npm and run build
         run: |
@@ -62,14 +54,20 @@ jobs:
           rm -rf node_modules
 
 
-
       - name: install npm and run build 
         run: |
             cd ./frontend
             npm install
             npm run build
 
-
+      - name: Cache virtual environment
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            venv-${{ runner.os }}-
+              
       - name: Upload the code
         uses: actions/upload-artifact@v4
         with:
