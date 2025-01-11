@@ -24,7 +24,7 @@ jobs:
   
   build:
     needs: source
-    runs-on: ubunto-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Delete old artifacts
         uses: geekyeggo/delete-artifact@v2
@@ -72,7 +72,7 @@ jobs:
 
   test:
     needs: build
-    runs-on: ubunto-latest
+    runs-on: ubuntu-latest
     outputs:
       artifact-url: ${{ steps.upload-test-report.outputs.artifact-url }}
     steps:
