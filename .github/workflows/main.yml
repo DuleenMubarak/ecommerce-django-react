@@ -1,0 +1,211 @@
+name: Final QA Automation Project WorkFlow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs: 
+  source:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Check out repository code #Get source code
+        uses: actions/checkout@v4
+      
+      - name: Upload the code
+        uses: actions/upload-artifact@v4
+        with:
+          name: code
+          path: .
+          retention-days: 1
+  
+  build:
+    needs: source
+    runs-on: ubunto-latest
+    steps:
+      - name: Delete old artifacts
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: code
+      
+      - name: Download code
+        uses: actions/upload-artifact@v4
+        with:
+          name: code
+          path: .
+
+      - name: Set up python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: 'pypy3.12.3'
+
+      - name: Install dependencies
+        run:  
+            python -m venv .venv
+            source .venv/Scripts/activate
+            pip install -r requirements.txt
+
+      - name: install npm and run build 
+        run: 
+            cd frontend
+            npm install
+            npm run build
+
+      - name: Cache virtual environment
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            venv-${{ runner.os }}-
+
+      - name: Upload the code
+        uses: actions/upload-artifact@v4
+        with:
+          name: code
+          path: .
+          retention-days: 1
+
+  test:
+    needs: build
+    runs-on: ubunto-latest
+    outputs:
+      artifact-url: ${{ steps.upload-test-report.outputs.artifact-url }}
+    steps:
+      - name: Download code
+        uses: actions/upload-artifact@v4
+        with:
+          name: code
+          path: .
+
+      - name: Set up python 3.12.3
+        uses: actions/setup-python@v5
+        with:
+          python-version: 'pypy3.12.3'
+
+      - name: Cache virtual environment
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            venv-${{ runner.os }}-   
+
+      - name: Run tests
+        run: |
+            source .venv/Scripts/activate
+            pytest tests/ --html-report=./report/report.html 
+      
+      - name: Upload test report
+        id: upload-test-report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: ./backend/report
+      
+      
+  deploy:
+    if: success()
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download code
+        uses: actions/download-artifact@v4
+        with:
+          name: code
+          path: .
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/ecommerce-django-react:latest .
+
+      - name: Login and Push Docker Image
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker push ${{ secrets.DOCKER_USERNAME }}/blog-and-react-js-blog:latest
+          
+      # - name: Deploy to render.com
+      #   uses: gh-actions-workflows/deploy-docker-render@v1.1
+      #   with:
+      #     deploy-hook: ${{ secrets.RENDER_DEPLOY_HOOK }}
+      #     image-url: ${{ secrets.DOCKER_USERNAME }}/blog-and-react-js-blog:latest
+      #     render-api-key: ${{ secrets.RENDER_TOKEN }}
+      #     wait-for-deployment: true
+
+  notify:
+    if: failure()
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      
+      - name: Download test report
+        uses: actions/download-artifact@v4
+        with:
+          name: test-report
+          path: ./report
+      
+      - name: Deploy report to github pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./report
+
+      - name: Send notification
+        run: |
+          echo "Tests failed, sending notification to developers."
+      
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "Tests failed",
+              attachments: [{
+                "author_name": "github actions", // json
+                fallback: 'fallback',
+                color: 'danger',
+                title: 'CI Result',
+                text: 'The test job failed. Please check the logs on the GitHub Actions page for more details.',
+                fields: [],
+                actions: []
+              },
+              {
+                title: 'Test Report Zip',
+                text: 'The test report is attached as a zip file.',
+                fields: [],
+                actions: [],
+                title_link: '${{ needs.test.outputs.artifact-url }}',
+                footer: '',
+                footer_icon: '',
+                image_url: '',
+                thumb_url: '',
+                author_name: '',
+                author_link: '',
+                author_icon: '',
+                video_html: '',
+                video_url: '',
+              },
+              {
+                title: 'Test Report Url',
+                text: 'The test report is attached as a url to github pages.',
+                fields: [],
+                actions: [],
+                title_link: 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/report.html',
+                footer: '',
+                footer_icon: '',
+                image_url: '',
+                thumb_url: '',
+                author_name: '',
+                author_link: '',
+                author_icon: '',
+                video_html: '',
+                video_url: '',
+              }]
+            }        
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
