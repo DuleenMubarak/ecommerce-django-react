@@ -1,15 +1,15 @@
 <h1 align=center>E-Commerce Website with Django + React & Redux</h1>
 <h2 align=center>Otaku House - Anime Merchandise and Cosplay Shop</h2>
 
-## ✨ [Live Link - Otaku House](https://otakuhouse.herokuapp.com/)
+## ✨ [Live Link - Tiny Timber](https://localhost:8000)
 
 ### How to Run 🏃‍♀️
 
 ```shell
 1 Clone This Repo
 2 cd backend
-3 python -m venv env
-4 .\env\Scripts\activate
+3 python -m venv .venv
+4 source ./.venv/Scripts/activate
 5 pip install -r requirements.txt 
 6 python manage.py runserver
 
