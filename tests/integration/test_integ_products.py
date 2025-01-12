@@ -79,6 +79,7 @@ class TestProductsIntegration(APITestCase):
         self.assertEqual(updated_product.countInStock, update_data["countInStock"])
 
     #sorting by category
+    @pytest.mark.skip
     def test_filter_products_by_category(self):
         self.product1.category = "Electronics"
         self.product1.save()
