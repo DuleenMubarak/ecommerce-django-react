@@ -73,11 +73,11 @@ class UserModelTest(TestCase):
         self.assertTrue(self.superuser.is_superuser)
 
     #test if usernames are unique
-    def test_username_uniqueness(self):
+    def test_email_uniqueness(self):
         with self.assertRaises(Exception):
             User.objects.create_user(
                 username="testuser",
-                email="duplicate@example.com",
+                email="testuser@example.com",
                 password="password123"
             )
 
