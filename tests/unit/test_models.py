@@ -132,49 +132,46 @@ class ReviewModelTest(TestCase):
         )
         self.assertEqual(review_without_comment.comment, None)
     
-# class OrderModelTest(TestCase):
-#     #create a user and an order 
-#     def setUp(self):
-#         self.user = User.objects.create_user(username="testuser", password="password123")
-#         self.order = Order.objects.create(
-#             user=self.user,
-#             paymentMethod="PayPal",
-#             taxPrice=10.00,
-#             shippingPrice=5.00,
-#             totalPrice=115.00,
-#             isPaid=False,
-#             isDelivered=False,
-#         )
+class OrderModelTest(TestCase):
+    #create a user and an order 
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="password123")
+        self.order = Order.objects.create(
+            user=self.user,
+            paymentMethod="PayPal",
+            taxPrice=10.00,
+            shippingPrice=5.00,
+            totalPrice=115.00,
+            isPaid=False
+        )
 
-#     #delete data
-#     def tearDown(self):
-#         self.order.delete()
-#         self.user.delete()
+    #delete data
+    def tearDown(self):
+        self.order.delete()
+        self.user.delete()
 
 
-#     #test the order creation 
-#     @pytest.mark.skip   
-#     def test_order_creation(self):
-#         self.assertEqual(self.order.user, self.user)
-#         self.assertEqual(self.order.paymentMethod, "PayPal")
-#         self.assertEqual(self.order.taxPrice, 10.00)
-#         self.assertEqual(self.order.shippingPrice, 5.00)
-#         self.assertEqual(self.order.totalPrice, 115.00)
-#         self.assertFalse(self.order.isPaid)
-#         self.assertFalse(self.order.isDelivered)
-#         self.assertIsNotNone(self.order.createdAt)
+    #test the order creation 
+    def test_order_creation(self):
+        self.assertEqual(self.order.user, self.user)
+        self.assertEqual(self.order.paymentMethod, "PayPal")
+        self.assertEqual(self.order.taxPrice, 10.00)
+        self.assertEqual(self.order.shippingPrice, 5.00)
+        self.assertEqual(self.order.totalPrice, 115.00)
+        self.assertFalse(self.order.isPaid)
+        self.assertIsNotNone(self.order.createdAt)
     
-#     #updating the paid status and timestamp of the order
-#     def test_order_paid_status(self):
-#         self.order.isPaid = True
-#         current_time = now()
-#         self.order.paidAt = current_time
-#         self.order.save()
-#         self.assertTrue(self.order.isPaid)
-#         self.assertEqual(str(self.order.paidAt), current_time)
+    #updating the paid status and timestamp of the order
+    def test_order_paid_status(self):
+        self.order.isPaid = True
+        current_time = now()
+        self.order.paidAt = current_time
+        self.order.save()
+        self.assertTrue(self.order.isPaid)
+        self.assertEqual(self.order.paidAt.isoformat(), current_time.isoformat())
     
-#     #testing the total amount of the order
-#     def test_order_total_calculation(self):
-#         self.order.totalPrice = self.order.taxPrice + self.order.shippingPrice + 100.00 #assuming the subtotal of the products is 100
-#         self.order.save()
-#         self.assertEqual(self.order.totalPrice, 115.00)
+    #testing the total amount of the order
+    def test_order_total_calculation(self):
+        self.order.totalPrice = self.order.taxPrice + self.order.shippingPrice + 100.00 #assuming the subtotal of the products is 100
+        self.order.save()
+        self.assertEqual(self.order.totalPrice, 115.00)
